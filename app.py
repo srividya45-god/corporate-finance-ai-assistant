@@ -1,13 +1,11 @@
 import streamlit as st
 
-# Page settings
 st.set_page_config(
     page_title="Corporate Finance AI Assistant",
     page_icon="📊",
     layout="wide"
 )
 
-# Title
 st.title("📊 Corporate Finance AI Assistant")
 st.write(
     "A GenAI-based application for financial analysis, "
@@ -19,7 +17,6 @@ st.info(
     "Use anonymized or sample financial data."
 )
 
-# Sidebar
 st.sidebar.header("📌 Navigation")
 
 module = st.sidebar.radio(
@@ -33,7 +30,9 @@ module = st.sidebar.radio(
     ]
 )
 
+
 # ---------------- HOME ----------------
+
 if module == "Home":
 
     st.header("Welcome!")
@@ -61,7 +60,9 @@ if module == "Home":
         st.write("🤖 **AI Assistant**")
         st.write("Get simple explanations of financial results.")
 
+
 # ---------------- RATIO ANALYSIS ----------------
+
 elif module == "Ratio Analysis":
 
     st.header("📊 Ratio Analysis")
@@ -143,7 +144,9 @@ elif module == "Ratio Analysis":
 
         st.success("Ratio calculation completed successfully.")
 
+
 # ---------------- WACC ----------------
+
 elif module == "WACC Calculator":
 
     st.header("💰 WACC Calculator")
@@ -197,16 +200,20 @@ elif module == "WACC Calculator":
     if st.button("Calculate WACC"):
 
         total_weight = (
-            equity_weight +
-            debt_weight +
-            preference_weight
+            equity_weight
+            + debt_weight
+            + preference_weight
         )
 
         if total_weight != 100:
+
             st.warning(
-                f"Your weights currently total {total_weight:.2f}%. "
-                "For a standard WACC calculation, they should total 100%."
+                f"Your weights currently total "
+                f"{total_weight:.2f}%. "
+                "For a standard WACC calculation, "
+                "they should total 100%."
             )
+
         else:
 
             e = equity_weight / 100
@@ -216,12 +223,13 @@ elif module == "WACC Calculator":
             ke = equity_cost / 100
             kd = debt_cost / 100
             kp = preference_cost / 100
+
             tax = tax_rate / 100
 
             wacc = (
-                e * ke +
-                d * kd * (1 - tax) +
-                p * kp
+                e * ke
+                + d * kd * (1 - tax)
+                + p * kp
             ) * 100
 
             st.metric(
@@ -229,11 +237,11 @@ elif module == "WACC Calculator":
                 f"{wacc:.2f}%"
             )
 
-            st.success(
-                "WACC calculated successfully."
-            )
+            st.success("WACC calculated successfully.")
+
 
 # ---------------- CAPITAL BUDGETING ----------------
+
 elif module == "Capital Budgeting":
 
     st.header("📈 Capital Budgeting")
@@ -252,47 +260,190 @@ elif module == "Capital Budgeting":
 
     st.subheader("Annual Cash Flows")
 
-    cf1 = st.number_input("Year 1 Cash Flow", value=120.0)
-    cf2 = st.number_input("Year 2 Cash Flow", value=150.0)
-    cf3 = st.number_input("Year 3 Cash Flow", value=180.0)
-    cf4 = st.number_input("Year 4 Cash Flow", value=200.0)
-    cf5 = st.number_input("Year 5 Cash Flow", value=220.0)
+    cf1 = st.number_input(
+        "Year 1 Cash Flow",
+        value=120.0
+    )
+
+    cf2 = st.number_input(
+        "Year 2 Cash Flow",
+        value=150.0
+    )
+
+    cf3 = st.number_input(
+        "Year 3 Cash Flow",
+        value=180.0
+    )
+
+    cf4 = st.number_input(
+        "Year 4 Cash Flow",
+        value=200.0
+    )
+
+    cf5 = st.number_input(
+        "Year 5 Cash Flow",
+        value=220.0
+    )
+
 
     if st.button("Calculate Project"):
 
         rate = discount_rate / 100
 
-        cash_flows = [cf1, cf2, cf3, cf4, cf5]
+        cash_flows = [
+            cf1,
+            cf2,
+            cf3,
+            cf4,
+            cf5
+        ]
+
+
+        # ---------- NPV ----------
 
         npv = -initial_investment
 
-        for year, cash_flow in enumerate(cash_flows, start=1):
-            npv += cash_flow / ((1 + rate) ** year)
+        for year, cash_flow in enumerate(
+            cash_flows,
+            start=1
+        ):
+
+            npv += (
+                cash_flow
+                / ((1 + rate) ** year)
+            )
+
+
+        # ---------- PAYBACK ----------
 
         cumulative = 0
         payback = None
 
-        for year, cash_flow in enumerate(cash_flows, start=1):
+        for year, cash_flow in enumerate(
+            cash_flows,
+            start=1
+        ):
 
             previous = cumulative
+
             cumulative += cash_flow
 
             if cumulative >= initial_investment:
-                remaining = initial_investment - previous
+
+                remaining = (
+                    initial_investment
+                    - previous
+                )
 
                 if cash_flow != 0:
-                    fraction = remaining / cash_flow
+                    fraction = (
+                        remaining / cash_flow
+                    )
                 else:
                     fraction = 0
 
-                payback = (year - 1) + fraction
+                payback = (
+                    year - 1
+                ) + fraction
+
                 break
+
+
+        # ---------- IRR ----------
+
+        def calculate_irr(investment, flows):
+
+            def calculate_npv(rate):
+
+                value = -investment
+
+                for year, cash_flow in enumerate(
+                    flows,
+                    start=1
+                ):
+
+                    value += (
+                        cash_flow
+                        / ((1 + rate) ** year)
+                    )
+
+                return value
+
+
+            low = -0.9999
+            high = 1.0
+
+            low_npv = calculate_npv(low)
+            high_npv = calculate_npv(high)
+
+
+            # Expand the upper limit if necessary
+
+            attempts = 0
+
+            while (
+                low_npv * high_npv > 0
+                and attempts < 20
+            ):
+
+                high = high * 2
+
+                high_npv = calculate_npv(high)
+
+                attempts += 1
+
+
+            # No IRR found
+
+            if low_npv * high_npv > 0:
+                return None
+
+
+            # Bisection method
+
+            for _ in range(100):
+
+                middle = (
+                    low + high
+                ) / 2
+
+                middle_npv = calculate_npv(
+                    middle
+                )
+
+                if abs(middle_npv) < 0.000001:
+
+                    return middle * 100
+
+
+                if low_npv * middle_npv <= 0:
+
+                    high = middle
+                    high_npv = middle_npv
+
+                else:
+
+                    low = middle
+                    low_npv = middle_npv
+
+
+            return middle * 100
+
+
+        irr = calculate_irr(
+            initial_investment,
+            cash_flows
+        )
+
+
+        # ---------- DISPLAY RESULTS ----------
 
         st.subheader("Results")
 
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
 
         with col1:
+
             st.metric(
                 "NPV",
                 f"₹ {npv:.2f}"
@@ -300,35 +451,60 @@ elif module == "Capital Budgeting":
 
         with col2:
 
+            if irr is not None:
+
+                st.metric(
+                    "IRR",
+                    f"{irr:.2f}%"
+                )
+
+            else:
+
+                st.metric(
+                    "IRR",
+                    "Not found"
+                )
+
+        with col3:
+
             if payback is not None:
+
                 st.metric(
                     "Payback Period",
                     f"{payback:.2f} years"
                 )
+
             else:
+
                 st.metric(
                     "Payback Period",
                     "Not recovered"
                 )
 
+
+        # ---------- NPV COMMENT ----------
+
         if npv > 0:
+
             st.success(
                 "Based on NPV, the project has a positive NPV."
             )
+
         elif npv < 0:
+
             st.error(
                 "Based on NPV, the project has a negative NPV."
             )
+
         else:
+
             st.info(
                 "The project has an NPV of zero."
             )
 
-        st.info(
-            "IRR will be added in the next development stage."
-        )
 
 # ---------------- AI ASSISTANT ----------------
+
 elif module == "AI Assistant":
 
     st.header("🤖 Corporate Finance AI Assistant")
@@ -347,7 +523,8 @@ elif module == "AI Assistant":
         if question.strip():
 
             st.info(
-                "The AI connection will be added in the next stage. "
+                "The AI connection will be added "
+                "in the next development stage. "
                 "Your question has been received."
             )
 
@@ -357,7 +534,11 @@ elif module == "AI Assistant":
                 "Please enter a question first."
             )
 
+
+# ---------------- SIDEBAR FOOTER ----------------
+
 st.sidebar.markdown("---")
+
 st.sidebar.caption(
     "Corporate Finance AI Assistant | MBA Finance Project"
 )
