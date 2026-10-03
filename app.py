@@ -143,6 +143,15 @@ elif module == "Ratio Analysis":
             )
 
         st.success("Ratio calculation completed successfully.")
+st.subheader("📊 Ratio Analysis Chart")
+
+chart_data = {
+    "Net Profit Margin": net_margin,
+    "Current Ratio": current_ratio,
+    "Debt-Equity Ratio": debt_equity
+}
+
+st.bar_chart(chart_data)
 
 
 # ---------------- WACC ----------------
