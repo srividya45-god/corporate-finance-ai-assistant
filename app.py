@@ -1,5 +1,5 @@
 import streamlit as st
-
+import anthropic
 st.set_page_config(
     page_title="Corporate Finance AI Assistant",
     page_icon="📊",
@@ -523,11 +523,27 @@ elif module == "AI Assistant":
 
         if question.strip():
 
-            st.info(
-                "The AI connection will be added "
-                "in the next development stage. "
-                "Your question has been received."
-            )
+            try:
+    client = anthropic.Anthropic(
+        api_key=st.secrets["ANTHROPIC_API_KEY"]
+    )
+
+    response = client.messages.create(
+        model="claude-3-5-haiku-latest",
+        max_tokens=500,
+        messages=[
+            {
+                "role": "user",
+                "content": question
+            }
+        ]
+    )
+
+    st.subheader("AI Response")
+    st.write(response.content[0].text)
+
+except Exception as e:
+    st.error(f"AI connection error: {e}")
 
         else:
 
