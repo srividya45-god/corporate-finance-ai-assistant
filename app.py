@@ -515,46 +515,38 @@ elif module == "AI Assistant":
         "and financial analysis."
     )
 
-    question = st.text_area(
+        question = st.text_area(
         "Enter your question:"
     )
 
     if st.button("Submit Question"):
+        if question.strip():
+            try:
+                client = anthropic.Anthropic(
+                    api_key=st.secrets["ANTHROPIC_API_KEY"]
+                )
 
-    if question.strip():
-    try:
-        client = anthropic.Anthropic(
-            api_key=st.secrets["ANTHROPIC_API_KEY"]
-        )
+                response = client.messages.create(
+                    model="claude-3-5-haiku-latest",
+                    max_tokens=500,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": question
+                        }
+                    ]
+                )
 
-        response = client.messages.create(
-            model="claude-3-5-haiku-latest",
-            max_tokens=500,
-            messages=[
-                {
-                    "role": "user",
-                    "content": question
-                }
-            ]
-        )
+                st.subheader("AI Response")
+                st.write(response.content[0].text)
 
-        st.subheader("AI Response")
-        st.write(response.content[0].text)
+            except Exception as e:
+                st.error(f"AI connection error: {e}")
 
-    except Exception as e:
-        st.error(f"AI connection error: {e}")
-
-
-    st.subheader("AI Response")
-    st.write(response.content[0].text)
-
-except Exception as e:
-    st.error(f"AI connection error: {e}")
-
-    else:
-        st.warning(
-            "Please enter a question first."
-            )
+        else:
+            st.warning(
+                "Please enter a question first."
+    )
 
 
 # ---------------- SIDEBAR FOOTER ----------------
