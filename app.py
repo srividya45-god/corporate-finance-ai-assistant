@@ -515,7 +515,7 @@ elif module == "AI Assistant":
         "and financial analysis."
     )
 
-        question = st.text_area(
+question = st.text_area(
         "Enter your question:"
     )
 
