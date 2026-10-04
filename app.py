@@ -519,7 +519,7 @@ question = st.text_area(
         "Enter your question:"
     )
 
-    if st.button("Submit Question"):
+if st.button("Submit Question"):
         if question.strip():
             try:
                 client = anthropic.Anthropic(
